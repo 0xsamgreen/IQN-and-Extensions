@@ -144,7 +144,7 @@ class IQN_Agent():
                 action = random.choices(np.arange(self.action_size), k=1)
             else:
                 action = random.choices(np.arange(self.action_size), k=self.worker)
-            return action
+            return np.array(action)
 
 
 
