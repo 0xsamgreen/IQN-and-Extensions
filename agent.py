@@ -125,10 +125,14 @@ class IQN_Agent():
         # Epsilon-greedy action selection
         if random.random() > eps: # select greedy action if random number is higher than epsilon or noisy network is used!
             state = np.array(state)
-            if len(self.state_size) > 1:
-                state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)#.expand(self.K, self.state_size[0], self.state_size[1],self.state_size[2])        
-            else:
-                state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)#.expand(self.K, self.state_size[0])
+            # Check if state is already batched (multiple workers) or single
+            if state.ndim == len(self.state_size):  # Single state, needs batch dimension
+                if len(self.state_size) > 1:
+                    state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
+                else:
+                    state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
+            else:  # Already batched from multiple workers
+                state = torch.from_numpy(state).float().to(self.device)
             self.qnetwork_local.eval()
             with torch.no_grad():
                 action_values = self.qnetwork_local.get_qvalues(state)#.mean(0)
