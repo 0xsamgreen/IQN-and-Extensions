@@ -1,7 +1,7 @@
 import collections
 import numpy as np
-import gym.spaces
-import gym
+import gymnasium.spaces as gym_spaces
+import gymnasium as gym
 import cv2
 
 class FireResetEnv(gym.Wrapper):
@@ -50,7 +50,7 @@ class MaxAndSkipEnv(gym.Wrapper):
 class ProcessFrame84(gym.ObservationWrapper):
     def __init__(self, env=None):
         super(ProcessFrame84, self).__init__(env)
-        self.observation_space = gym.spaces.Box(
+        self.observation_space = gym_spaces.Box(
         low=0, high=255, shape=(84, 84, 1), dtype=np.uint8)
     def observation(self, obs):
         return ProcessFrame84.process(obs)
@@ -75,7 +75,7 @@ class BufferWrapper(gym.ObservationWrapper):
         super(BufferWrapper, self).__init__(env)
         self.dtype = dtype
         old_space = env.observation_space 
-        self.observation_space = gym.spaces.Box(
+        self.observation_space = gym_spaces.Box(
         old_space.low.repeat(n_steps, axis=0),
         old_space.high.repeat(n_steps, axis=0), dtype=dtype)
     
@@ -93,7 +93,7 @@ class ImageToPyTorch(gym.ObservationWrapper):
         super(ImageToPyTorch, self).__init__(env)
         old_shape = self.observation_space.shape
         new_shape = (old_shape[-1], old_shape[0], old_shape[1])
-        self.observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=new_shape, dtype=np.float32)
+        self.observation_space = gym_spaces.Box(low=0.0, high=1.0, shape=new_shape, dtype=np.float32)
 
     def observation(self, observation):
         return np.moveaxis(observation, 2, 0)

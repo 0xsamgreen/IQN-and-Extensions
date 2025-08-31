@@ -6,7 +6,7 @@ import math
 from torch.utils.tensorboard import SummaryWriter
 from collections import deque
 import time
-import gym
+import gymnasium as gym
 import argparse
 import wrapper
 import MultiPro
@@ -18,11 +18,12 @@ def evaluate(eps, frame, eval_runs=5):
 
     reward_batch = []
     for i in range(eval_runs):
-        state = eval_env.reset()
+        state, _ = eval_env.reset()
         rewards = 0
         while True:
             action = agent.act(np.expand_dims(state, axis=0), 0.001, eval=True)
-            state, reward, done, _ = eval_env.step(action[0].item())
+            state, reward, terminated, truncated, _ = eval_env.step(action[0].item())
+            done = terminated or truncated
             rewards += reward
             if done:
                 break
@@ -136,14 +137,15 @@ if __name__ == "__main__":
     np.random.seed(seed)
     random.seed(seed)
     torch.manual_seed(seed)
-    if "-ram" in args.env or args.env == "CartPole-v0" or args.env == "LunarLander-v2": 
+    if "-ram" in args.env or "CartPole" in args.env or "LunarLander" in args.env: 
         envs = MultiPro.SubprocVecEnv([lambda: gym.make(args.env) for i in range(args.worker)])
         eval_env = gym.make(args.env)
     else:
         envs = MultiPro.SubprocVecEnv([lambda: wrapper.make_env(args.env) for i in range(args.worker)])
         eval_env = wrapper.make_env(args.env)
-    envs.seed(seed)
-    eval_env.seed(seed+1)
+    # Gymnasium uses reset(seed=...) instead of env.seed()
+    # envs.seed(seed)  # MultiPro handles seeding differently
+    # eval_env.seed(seed+1)  # Will be handled in reset
 
 
     action_size = eval_env.action_space.n

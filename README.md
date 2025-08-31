@@ -4,10 +4,9 @@ This implementation allows it also to run and train on several environments in p
 
 
 
-### Implementations
-- Baseline IQN [Notebook](https://github.com/BY571/IQN/blob/master/IQN-DQN.ipynb)
-- Script Version with all extensions: [IQN](https://github.com/BY571/IQN/blob/master/run.py)
-The IQN Baseline in this repository is already a Double IQN version with target networks! 
+### Implementation
+- IQN with all extensions: [run.py](https://github.com/BY571/IQN/blob/master/run.py)
+The IQN implementation in this repository is already a Double IQN version with target networks! 
 
 ### Extensions
 
@@ -15,10 +14,10 @@ The IQN Baseline in this repository is already a Double IQN version with target 
 - Noisy layer
 - N-step bootstrapping 
 - [Munchausen](https://medium.com/analytics-vidhya/munchausen-reinforcement-learning-9876efc829de) RL 
-- Parallel environments for faster training (wall clock time). For CartPole-v0 3 worker reduced training time to 1/3! 
+- Parallel environments for faster training (wall clock time). For CartPole-v1 3 worker reduced training time to 1/3! 
 
 ## Train
-With the script version it is possible to train on simple environments like CartPole-v0 and LunarLander-v2 or on Atari games with image inputs!
+It is possible to train on simple environments like CartPole-v1 and LunarLander-v2 or on Atari games with image inputs!
 
 To run the script version:
 `python run.py -info iqn_run1`
@@ -56,12 +55,13 @@ To see the options:
   
 
 #### Dependencies
-Trained and tested on:
 <pre>
-Python 3.6 
-PyTorch 1.4.0  
-Numpy 1.15.2 
-gym 0.10.11 
+Python 3.10+ 
+PyTorch 2.0+  
+Numpy 1.20+ 
+gymnasium 0.29+ 
+tensorboard
+opencv-python (for Atari environments)
 </pre>
 
 ## CartPole Results
