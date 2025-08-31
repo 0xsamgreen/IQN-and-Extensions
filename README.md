@@ -53,6 +53,29 @@ To see the options:
 ### Observe training results
   `tensorboard --logdir=runs`
   
+### Remote TensorBoard Viewing
+
+If you're training on a remote server and want to view TensorBoard on your local machine:
+
+1. **On the remote server**, start TensorBoard:
+   ```bash
+   source venv/bin/activate
+   python -m tensorboard.main --logdir=runs --host=127.0.0.1 --port=6006 --load_fast=false
+   ```
+
+2. **On your local machine**, create an SSH tunnel:
+   ```bash
+   ssh -L 6006:localhost:6006 username@remote-server-ip
+   ```
+
+3. **Open your browser** and navigate to:
+   ```
+   http://localhost:6006
+   ```
+
+**Note:** If port 6006 is already in use on your local machine, you can use a different port:
+- SSH tunnel: `ssh -L 8888:localhost:6006 username@remote-server-ip`
+- Browser: `http://localhost:8888`
 
 #### Dependencies
 <pre>
