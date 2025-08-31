@@ -20,13 +20,47 @@ This is a PyTorch implementation of Implicit Quantile Networks (IQN) for Distrib
 - Dueling architecture
 - Parallel environment training
 
+## Current Status & Issues Fixed (Dec 31, 2024)
+
+### Performance Issues Identified
+The IQN implementation was performing poorly (scores ~13-24 on CartPole instead of 200+). The following bugs were identified and fixed:
+
+### Bugs Fixed
+1. **Soft vs Hard Updates**: Changed from soft updates back to hard updates was causing instability. Reverted to use soft updates with TAU=1e-3
+2. **Batching Issue**: `agent.act()` wasn't handling single states properly - needed to add batch dimension with `unsqueeze(0)`
+3. **Action Type Issue**: `random.choices()` returns lists, needed conversion to numpy arrays
+4. **Multi-worker Handling**: Fixed batching logic to handle both single and multiple worker scenarios
+5. **SubprocVecEnv Hanging**: Single worker mode was trying to use subprocess wrapper unnecessarily
+
+### Recommended Hyperparameters for CartPole
+```bash
+python run.py -env CartPole-v1 -info iqn_fixed -frames 50000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -w 1
+```
+- Use `-w 1` (single worker) to avoid subprocess issues
+- Use `-N 8` instead of 32 for faster computation
+- Use `-lr 2.5e-4` (much higher than the 5e-5 that was causing poor performance)
+- Use `-bs 32` for reasonable batch size
+
+### Known Issues
+- MultiPro.SubprocVecEnv hangs when creating environments
+- Workaround: Use `-w 1` for single worker mode
+- Alternative: Use `test_run.py` which bypasses MultiPro entirely
+
+### Files Modified
+- `agent.py`: Fixed batching, action types, reverted to soft updates
+- `model.py`: Fixed pis initialization (though reverted)
+- `run.py`: Added single worker wrapper, debug outputs
+
+### Expected Performance
+With these fixes, the agent should reach 200+ scores (solving CartPole) within 10,000-20,000 frames.
+
 ## Commands
 
 ### Running Training
 
-Basic training on CartPole:
+Basic training on CartPole (RECOMMENDED):
 ```bash
-python run.py -info iqn_run1
+python run.py -env CartPole-v1 -info iqn_run1 -frames 50000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -w 1
 ```
 
 Training on Atari games (e.g., Pong):
@@ -40,7 +74,8 @@ python run.py -env PongNoFrameskip-v4 -info iqn_pong1
 - `-env`: Environment name (default: BreakoutNoFrameskip-v4)
 - `-frames`: Training frames (default: 10M)
 - `-N`: Number of quantiles (default: 8)
-- `-w`: Number of parallel workers (default: 1)
+- `-w`: Number of parallel workers (default: 1) **USE 1 TO AVOID HANGING**
+- `-lr`: Learning rate (default: 2.5e-4) **CRITICAL: Don't use values below 1e-4**
 - `-munchausen`: Enable Munchausen RL (0 or 1)
 
 ### Monitoring Training
@@ -49,6 +84,8 @@ View training progress:
 ```bash
 tensorboard --logdir=runs
 ```
+
+For remote viewing, see README.md section on "Remote TensorBoard Viewing"
 
 ## Architecture
 
