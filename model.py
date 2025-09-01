@@ -56,7 +56,7 @@ class IQN(nn.Module):
         self.N = N  
         self.n_cos = 64
         self.layer_size = layer_size
-        self.pis = torch.FloatTensor([np.pi*i for i in range(1,self.n_cos+1)]).view(1,1,self.n_cos).to(device) # Starting from 1 as original 
+        self.pis = torch.FloatTensor([np.pi*i for i in range(1,self.n_cos+1)]).view(1,1,self.n_cos).to(device) # Starting from 1 as per IQN paper 
         self.dueling = dueling
         self.device = device
         if noisy:

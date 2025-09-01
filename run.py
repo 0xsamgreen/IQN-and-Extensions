@@ -44,6 +44,7 @@ def run(frames=1000, eps_fixed=False, eps_frames=1e6, min_eps=0.01, eval_every=1
         eps_end (float): minimum value of epsilon
         eps_decay (float): multiplicative factor (per episode) for decreasing epsilon
     """
+    print("Starting run function...")
     scores = []                        # list containing scores from each episode
     scores_window = deque(maxlen=100)  # last 100 scores
     frame = 0
@@ -54,9 +55,13 @@ def run(frames=1000, eps_fixed=False, eps_frames=1e6, min_eps=0.01, eval_every=1
     eps_start = 1
     d_eps = eps_start - min_eps
     i_episode = 1
+    print("Resetting environments...")
     state = envs.reset()
+    print(f"Initial state shape: {np.array(state).shape}")
     score = 0                  
     for frame in range(1, frames+1):
+        if frame % 100 == 1:
+            print(f"Frame {frame}")
         action = agent.act(state, eps)
         next_state, reward, done, _ = envs.step(action) #returns np.stack(obs), np.stack(action) ...
         for s, a, r, ns, d in zip(state, action, reward, next_state, done):
@@ -138,8 +143,27 @@ if __name__ == "__main__":
     random.seed(seed)
     torch.manual_seed(seed)
     if "-ram" in args.env or "CartPole" in args.env or "LunarLander" in args.env: 
-        envs = MultiPro.SubprocVecEnv([lambda: gym.make(args.env) for i in range(args.worker)])
+        print(f"Creating {args.worker} environments...")
+        if args.worker == 1:
+            # For single worker, use simple wrapper instead of subprocess
+            envs = gym.make(args.env)
+            # Wrap it to match the API
+            class SingleEnvWrapper:
+                def __init__(self, env):
+                    self.env = env
+                def reset(self):
+                    state, _ = self.env.reset()
+                    return np.array([state])
+                def step(self, actions):
+                    action = actions[0] if isinstance(actions, (list, np.ndarray)) else actions
+                    next_state, reward, done, truncated, info = self.env.step(action)
+                    return np.array([next_state]), np.array([reward]), np.array([done or truncated]), [info]
+            envs = SingleEnvWrapper(envs)
+        else:
+            envs = MultiPro.SubprocVecEnv([lambda: gym.make(args.env) for i in range(args.worker)])
+        print("Created training environments")
         eval_env = gym.make(args.env)
+        print("Created eval environment")
     else:
         envs = MultiPro.SubprocVecEnv([lambda: wrapper.make_env(args.env) for i in range(args.worker)])
         eval_env = wrapper.make_env(args.env)
@@ -151,6 +175,7 @@ if __name__ == "__main__":
     action_size = eval_env.action_space.n
     state_size = eval_env.observation_space.shape
 
+    print("Creating agent...")
     agent = IQN_Agent(state_size=state_size,    
                         action_size=action_size,
                         network=args.agent,
@@ -166,6 +191,7 @@ if __name__ == "__main__":
                         worker=args.worker,
                         device=device, 
                         seed=seed)
+    print("Agent created, starting training...")
 
 
 

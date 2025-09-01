@@ -158,47 +158,25 @@ class IQN_Agent():
         self.optimizer.zero_grad()
         if not self.munchausen:
             states, actions, rewards, next_states, dones = experiences
-            
-            # Ensure correct tensor shapes
-            if rewards.dim() == 2:
-                rewards = rewards.squeeze(1)
-            if dones.dim() == 2:
-                dones = dones.squeeze(1)
-            
-            # Sample N_dash quantiles for target network
-            batch_size = states.shape[0]
-            N_dash = self.N  # Can be different from N in general
-            Q_targets_next, tau_dashes = self.qnetwork_target(next_states, N_dash) 
-            Q_targets_next = Q_targets_next.detach()
-            
-            # Get greedy actions based on mean Q-values
-            Q_next_mean = Q_targets_next.mean(dim=1)
-            action_indx = torch.argmax(Q_next_mean, dim=1, keepdim=True)
-            
-            # Select target quantiles for chosen actions
-            Q_targets_next = Q_targets_next.gather(2, action_indx.unsqueeze(1).expand(batch_size, N_dash, 1))
-            assert Q_targets_next.shape == (batch_size, N_dash, 1)
-            
-            # Compute Q targets for current states - shape (batch, 1, N_dash)
-            Q_targets = rewards.view(-1, 1, 1) + (self.GAMMA**self.n_step * Q_targets_next.transpose(1,2) * (1. - dones.view(-1, 1, 1)))
-            assert Q_targets.shape == (batch_size, 1, N_dash), f"Q_targets shape: {Q_targets.shape}, expected: ({batch_size}, 1, {N_dash})"
-            
-            # Get expected Q values from local model - sample N quantiles
+            # Get max predicted Q values (for next states) from target model
+            Q_targets_next, _ = self.qnetwork_target(next_states, self.N) 
+            Q_targets_next = Q_targets_next.detach().cpu()
+            action_indx = torch.argmax(Q_targets_next.mean(dim=1), dim=1, keepdim=True)
+            Q_targets_next = Q_targets_next.gather(2, action_indx.unsqueeze(-1).expand(self.BATCH_SIZE, self.N, 1)).transpose(1,2)
+            # Compute Q targets for current states 
+            Q_targets = rewards.unsqueeze(-1) + (self.GAMMA**self.n_step * Q_targets_next.to(self.device) * (1. - dones.unsqueeze(-1)))
+            # Get expected Q values from local model
             Q_expected, taus = self.qnetwork_local(states, self.N)
-            Q_expected = Q_expected.gather(2, actions.unsqueeze(1).expand(batch_size, self.N, 1))
-            assert Q_expected.shape == (batch_size, self.N, 1)
+            Q_expected = Q_expected.gather(2, actions.unsqueeze(-1).expand(self.BATCH_SIZE, self.N, 1))
 
-            # Quantile Huber loss - pairwise TD errors
-            td_error = Q_targets - Q_expected  # Broadcasting: (batch, 1, N_dash) - (batch, N, 1) = (batch, N, N_dash)
-            assert td_error.shape == (batch_size, self.N, N_dash), f"wrong td error shape: {td_error.shape}"
+            # Quantile Huber loss
+            td_error = Q_targets - Q_expected
+            assert td_error.shape == (self.BATCH_SIZE, self.N, self.N), "wrong td error shape"
             huber_l = calculate_huber_loss(td_error, 1.0)
+            quantil_l = abs(taus -(td_error.detach() < 0).float()) * huber_l / 1.0
             
-            # Correct quantile regression loss
-            # taus shape: (batch, N, 1), td_error shape: (batch, N, N_dash)
-            quantil_l = abs(taus - (td_error.detach() < 0).float()) * huber_l / 1.0
-            
-            loss = quantil_l.mean(dim=2).mean(dim=1)  # Mean over N_dash, mean over N
-            loss = loss.mean()  # Mean over batch
+            loss = quantil_l.sum(dim=1).mean(dim=1) # , keepdim=True if per weights get multipl
+            loss = loss.mean()
         else:
             states, actions, rewards, next_states, dones = experiences
             Q_targets_next, _ = self.qnetwork_target(next_states, self.N)
@@ -272,38 +250,24 @@ class IQN_Agent():
                 dones = torch.FloatTensor(dones).to(self.device).unsqueeze(1)
                 weights = torch.FloatTensor(weights).unsqueeze(1).to(self.device)
 
-                # Sample N_dash quantiles for target network
-                batch_size = states.shape[0]
-                N_dash = self.N  # Can be different from N in general
-                Q_targets_next, tau_dashes = self.qnetwork_target(next_states, N_dash) 
-                Q_targets_next = Q_targets_next.detach()
-                
-                # Get greedy actions based on mean Q-values
-                Q_next_mean = Q_targets_next.mean(dim=1)
-                action_indx = torch.argmax(Q_next_mean, dim=1, keepdim=True)
-                
-                # Select target quantiles for chosen actions
-                Q_targets_next = Q_targets_next.gather(2, action_indx.unsqueeze(1).expand(batch_size, N_dash, 1))
-                assert Q_targets_next.shape == (batch_size, N_dash, 1)
-                
-                # Compute Q targets for current states - shape (batch, 1, N_dash)
-                Q_targets = rewards.unsqueeze(-1) + (self.GAMMA**self.n_step * Q_targets_next.transpose(1,2) * (1. - dones.unsqueeze(-1)))
-                assert Q_targets.shape == (batch_size, 1, N_dash)
-                
-                # Get expected Q values from local model - sample N quantiles
+                # Get max predicted Q values (for next states) from target model
+                Q_targets_next, _ = self.qnetwork_target(next_states, self.N) 
+                Q_targets_next = Q_targets_next.detach().cpu()
+                action_indx = torch.argmax(Q_targets_next.mean(dim=1), dim=1, keepdim=True)
+                Q_targets_next = Q_targets_next.gather(2, action_indx.unsqueeze(-1).expand(self.BATCH_SIZE, self.N, 1)).transpose(1,2)
+                # Compute Q targets for current states 
+                Q_targets = rewards.unsqueeze(-1) + (self.GAMMA**self.n_step * Q_targets_next.to(self.device) * (1. - dones.unsqueeze(-1)))
+                # Get expected Q values from local model
                 Q_expected, taus = self.qnetwork_local(states, self.N)
-                Q_expected = Q_expected.gather(2, actions.unsqueeze(-1).expand(batch_size, self.N, 1))
-                assert Q_expected.shape == (batch_size, self.N, 1)
+                Q_expected = Q_expected.gather(2, actions.unsqueeze(-1).expand(self.BATCH_SIZE, self.N, 1))
 
-                # Quantile Huber loss - pairwise TD errors
-                td_error = Q_targets - Q_expected  # Broadcasting: (batch, 1, N_dash) - (batch, N, 1) = (batch, N, N_dash)
-                assert td_error.shape == (batch_size, self.N, N_dash), f"wrong td error shape: {td_error.shape}"
+                # Quantile Huber loss
+                td_error = Q_targets - Q_expected
+                assert td_error.shape == (self.BATCH_SIZE, self.N, self.N), "wrong td error shape"
                 huber_l = calculate_huber_loss(td_error, 1.0)
+                quantil_l = abs(taus -(td_error.detach() < 0).float()) * huber_l / 1.0
                 
-                # Correct quantile regression loss
-                quantil_l = abs(taus - (td_error.detach() < 0).float()) * huber_l / 1.0
-                
-                loss = quantil_l.sum(dim=2).mean(dim=1, keepdim=True) * weights  # Sum over N_dash, mean over N, then weight
+                loss = quantil_l.sum(dim=1).mean(dim=1, keepdim=True)* weights # , keepdim=True if per weights get multipl
                 loss = loss.mean()
             else:
                 states, actions, rewards, next_states, dones, idx, weights = experiences

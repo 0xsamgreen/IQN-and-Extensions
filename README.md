@@ -19,11 +19,27 @@ The IQN implementation in this repository is already a Double IQN version with t
 ## Train
 It is possible to train on simple environments like CartPole-v1 and LunarLander-v2 or on Atari games with image inputs!
 
-To run the script version:
-`python run.py -info iqn_run1`
+### Quick Start - CartPole-v1
+```bash
+# Activate virtual environment first
+source venv/bin/activate
 
-To run the script version on the Atari game Pong:
-`python run.py -env PongNoFrameskip-v4 -info iqn_pong1`
+# Run with optimized hyperparameters for CartPole
+python run.py -env CartPole-v1 -info iqn_cartpole -frames 20000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -eps_frames 5000 -w 1
+```
+
+**Important for CartPole:** The default epsilon decay (`eps_frames=1000000`) is too slow for CartPole. Use `-eps_frames 2000-5000` for proper learning!
+
+### Atari Games
+To run on the Atari game Pong:
+```bash
+python run.py -env PongNoFrameskip-v4 -info iqn_pong1
+```
+
+### Advanced CartPole (Faster Learning)
+```bash
+python run.py -env CartPole-v1 -info iqn_fast -frames 20000 -eval_every 5000 -N 8 -lr 5e-4 -bs 64 -eps_frames 2000 -w 1
+```
 
 #### Other hyperparameter and possible inputs
 To see the options:
