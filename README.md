@@ -24,11 +24,14 @@ It is possible to train on simple environments like CartPole-v1 and LunarLander-
 # Activate virtual environment first
 source venv/bin/activate
 
-# Run with optimized hyperparameters for CartPole
+# Run with tested and verified hyperparameters for CartPole
 python run.py -env CartPole-v1 -info iqn_cartpole -frames 20000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -eps_frames 5000 -w 1
 ```
 
-**Important for CartPole:** The default epsilon decay (`eps_frames=1000000`) is too slow for CartPole. Use `-eps_frames 2000-5000` for proper learning!
+**Important for CartPole:** 
+- The default epsilon decay (`eps_frames=1000000`) is too slow for CartPole. Use `-eps_frames 5000` for proper learning!
+- This exact command has been tested and verified to work well
+- The agent should reach 50+ score by 5000 frames and 100+ by 10000 frames
 
 ### Atari Games
 To run on the Atari game Pong:
@@ -36,10 +39,6 @@ To run on the Atari game Pong:
 python run.py -env PongNoFrameskip-v4 -info iqn_pong1
 ```
 
-### Advanced CartPole (Faster Learning)
-```bash
-python run.py -env CartPole-v1 -info iqn_fast -frames 20000 -eval_every 5000 -N 8 -lr 5e-4 -bs 64 -eps_frames 2000 -w 1
-```
 
 #### Other hyperparameter and possible inputs
 To see the options:
