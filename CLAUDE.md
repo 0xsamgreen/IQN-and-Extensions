@@ -34,36 +34,31 @@ The IQN implementation is now **working correctly** after fixing critical algori
 
 ### Recommended Hyperparameters
 
-#### CartPole-v1 (Quick Learning)
+#### CartPole-v1 (Tested and Verified)
 ```bash
 python run.py -env CartPole-v1 -info iqn_cartpole -frames 20000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -eps_frames 5000 -w 1
 ```
 
-#### CartPole-v1 (Faster Learning)
-```bash
-python run.py -env CartPole-v1 -info iqn_fast -frames 20000 -eval_every 5000 -N 8 -lr 5e-4 -bs 64 -eps_frames 2000 -w 1
-```
-
 #### Key Parameters Explained
 - `-N 8`: Number of quantiles (8 is sufficient for CartPole, use 32-64 for Atari)
-- `-lr 2.5e-4` to `1e-3`: Learning rate (higher values learn faster but may be less stable)
-- `-bs 32` or `64`: Batch size (larger = more stable updates)
-- `-eps_frames 2000-5000`: Epsilon decay frames (CRITICAL for CartPole - must be much shorter than default 1M)
+- `-lr 2.5e-4`: Learning rate (tested and works well)
+- `-bs 32`: Batch size for stable updates
+- `-eps_frames 5000`: Epsilon decay frames (CRITICAL for CartPole - must be much shorter than default 1M)
 - `-w 1`: Single worker (avoids subprocess issues)
 
 ### Expected Performance
 
 With the fixed implementation:
-- **CartPole-v1**: Reaches 50+ score by 5000 frames, 100+ by 10000 frames, potentially 200+ by 20000 frames
-- **Atari Games**: Use default parameters with `-N 32` or `-N 64`
+- **CartPole-v1**: Reaches 50+ score by 5000 frames, 100+ by 10000 frames, potentially 200+ by 20000 frames (VERIFIED)
+- **Atari Games**: Not yet tested with current fixes. May require additional debugging for image-based observations
 
 ## Commands
 
 ### Running Training
 
-Basic training on CartPole (RECOMMENDED):
+Basic training on CartPole (TESTED & VERIFIED):
 ```bash
-python run.py -env CartPole-v1 -info iqn_run1 -frames 50000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -w 1
+python run.py -env CartPole-v1 -info iqn_cartpole -frames 20000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -eps_frames 5000 -w 1
 ```
 
 Training on Atari games (e.g., Pong):
@@ -78,7 +73,7 @@ python run.py -env PongNoFrameskip-v4 -info iqn_pong1
 - `-frames`: Training frames (default: 10M)
 - `-N`: Number of quantiles (default: 8)
 - `-w`: Number of parallel workers (default: 1) **USE 1 TO AVOID HANGING**
-- `-lr`: Learning rate (default: 2.5e-4) **CRITICAL: Don't use values below 1e-4**
+- `-lr`: Learning rate (default: 2.5e-4) **Tested value: 2.5e-4 works well for CartPole**
 - `-munchausen`: Enable Munchausen RL (0 or 1)
 
 ### Monitoring Training
