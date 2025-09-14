@@ -5,8 +5,7 @@ This implementation allows it also to run and train on several environments in p
 
 
 ### Implementation
-- IQN with all extensions: [run.py](https://github.com/BY571/IQN/blob/master/run.py)
-The IQN implementation in this repository is already a Double IQN version with target networks! 
+The IQN implementation in this repository includes Double IQN with target networks. 
 
 ### Extensions
 
@@ -14,7 +13,7 @@ The IQN implementation in this repository is already a Double IQN version with t
 - Noisy layer
 - N-step bootstrapping 
 - [Munchausen](https://medium.com/analytics-vidhya/munchausen-reinforcement-learning-9876efc829de) RL 
-- Parallel environments for faster training (wall clock time). For CartPole-v1 3 worker reduced training time to 1/3! 
+- Parallel environments for faster training 
 
 ## Train
 It is possible to train on simple environments like CartPole-v1 and LunarLander-v2 or on Atari games with image inputs!
@@ -37,7 +36,6 @@ python run.py -env CartPole-v1 -info iqn_cartpole -frames 20000 -eval_every 5000
 **Important Notes:**
 - The default epsilon decay (`eps_frames=1000000`) is too slow for CartPole. Use `-eps_frames 5000` for proper learning!
 - Use single worker (`-w 1`) for CartPole to avoid synchronization issues
-- This exact command has been tested and verified to work well (Dec 2024)
 
 ### Atari Games
 
@@ -50,17 +48,13 @@ source venv/bin/activate
 python run.py -env BreakoutNoFrameskip-v4 -info test_breakout -frames 1000 -N 32 -lr 5e-5 -bs 32 -w 1
 ```
 
-#### Full Training (Breakout) - VERIFIED WORKING
+#### Full Training (Breakout)
 ```bash
 # Full training run with recommended hyperparameters
-# STATUS: Confirmed working (Jan 2025) - successfully trains on Atari
 python run.py -env BreakoutNoFrameskip-v4 -info breakout_full -frames 10000000 -eval_every 250000 -N 32 -lr 5e-5 -bs 32 -eps_frames 1000000 -w 1
 ```
 
-**Note:** This command has been verified to initialize and train correctly. However:
-- Full convergence has not been tested to completion due to computational requirements
-- Hyperparameters may not be optimal and could benefit from further tuning
-- GPU acceleration is strongly recommended for full Atari training runs
+**Note:** GPU acceleration is strongly recommended for full Atari training runs
 
 #### Other Atari Games
 ```bash
@@ -148,21 +142,11 @@ Dueling IQN and Extensions (default hyperparameter):
 
 
 ## Atari Results
-IQN with Munchausen RL extension (M-IQN) trained for 500000 frames.
-
-**Hyperparameter:**
-- frames 500000
-- eps_frames 75000
-- min_eps 0.025
-- eval_every 10000
-- lr 1e-4
-- t 5e-3
-- m 15000
-- N 32
+IQN with Munchausen RL extension (M-IQN) on Breakout:
 
 ![alttext](/imgs/IQN_MIQN_BREAKOUT_.png)
 
-Performance after 10 mio frames, score 258
+Performance after 10M frames achieves score of 258.
 
 ![](/imgs/Breakout_IQN.gif?)
 

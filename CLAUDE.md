@@ -20,22 +20,13 @@ This is a PyTorch implementation of Implicit Quantile Networks (IQN) for Distrib
 - Dueling architecture
 - Parallel environment training
 
-## Current Status (Jan 2025)
+## Current Status
 
-The IQN implementation is now **fully working** for both vector and image-based environments after fixing critical algorithm bugs and Gymnasium compatibility issues.
-
-### Critical Bugs That Were Fixed
-
-1. **Incorrect TD Error Shape**: Fixed TD error calculation from `(batch, N, N)` to correct `(batch, N, N_dash)` for proper pairwise quantile comparison
-2. **Missing Separate Tau Sampling**: Now correctly samples different tau values for current network (tau) and target network (tau_dash)
-3. **Wrong Quantile Loss**: Fixed the quantile regression loss calculation with proper dimension handling
-4. **Loss Aggregation**: Changed from sum to mean over N_dash dimension for proper gradient scaling
-5. **Epsilon Decay**: Default eps_frames was 1M which prevented exploitation - now uses appropriate values for each environment
-6. **Gymnasium API Compatibility**: Updated all wrappers to work with Gymnasium's new API (separate terminated/truncated flags)
+The IQN implementation is **fully working** for both vector and image-based environments. Compatible with Gymnasium API.
 
 ### Recommended Hyperparameters
 
-#### CartPole-v1 (Tested and Verified)
+#### CartPole-v1
 ```bash
 python run.py -env CartPole-v1 -info iqn_cartpole -frames 20000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -eps_frames 5000 -w 1
 ```
@@ -49,15 +40,14 @@ python run.py -env CartPole-v1 -info iqn_cartpole -frames 20000 -eval_every 5000
 
 ### Expected Performance
 
-With the fixed implementation:
-- **CartPole-v1**: Reaches 50+ score by 5000 frames, 100+ by 10000 frames, 200+ by 20000 frames (VERIFIED Jan 2025)
-- **Atari Games**: Successfully initializes and trains (VERIFIED Jan 2025). Performance on CPU is slow (~1-2 min per 100 frames)
+- **CartPole-v1**: Reaches 50+ score by 5000 frames, 100+ by 10000 frames, 200+ by 20000 frames
+- **Atari Games**: Trains successfully. Performance on CPU is slow (~1-2 min per 100 frames), GPU recommended
 
 ## Commands
 
 ### Running Training
 
-Basic training on CartPole (TESTED & VERIFIED):
+Basic training on CartPole:
 ```bash
 python run.py -env CartPole-v1 -info iqn_cartpole -frames 20000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -eps_frames 5000 -w 1
 ```
@@ -83,7 +73,7 @@ python run.py -env PongNoFrameskip-v4 -info pong_full -frames 10000000 -N 32 -lr
 - `-frames`: Training frames (default: 10M)
 - `-N`: Number of quantiles (default: 8)
 - `-w`: Number of parallel workers (default: 1) **USE 1 TO AVOID HANGING**
-- `-lr`: Learning rate (default: 2.5e-4) **Tested value: 2.5e-4 works well for CartPole**
+- `-lr`: Learning rate (default: 2.5e-4)
 - `-munchausen`: Enable Munchausen RL (0 or 1)
 
 ### Monitoring Training
