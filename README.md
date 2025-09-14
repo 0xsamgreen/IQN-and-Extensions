@@ -1,5 +1,5 @@
-# Implicit Quantile Networks (IQN) for Distributional Reinforcement Learning and Extensions
-PyTorch Implementation of Implicit Quantile Networks (IQN) for Distributional Reinforcement Learning with additional extensions like PER, Noisy layer and N-step bootstrapping. Creating a new Rainbow-DQN version. 
+# Implicit Quantile Networks (IQN) for Distributional Reinforcement Learning
+PyTorch Implementation of Implicit Quantile Networks (IQN) for Distributional Reinforcement Learning with additional extensions like PER, Noisy layer and N-step bootstrapping.
 This implementation allows it also to run and train on several environments in parallel!
 
 
@@ -88,7 +88,7 @@ To see the options:
     -eval_runs, Number of evaluation runs, default = 2
     -seed, Random seed to replicate training runs, default = 1
     -munchausen, choices=[0,1], Use Munchausen RL loss for training if set to 1 (True), default = 0
-    -bs, --batch_size, Batch size for updating the DQN, default = 8
+    -bs, --batch_size, Batch size for updating the network, default = 8
     -layer_size, Size of the hidden layer, default=512
     -n_step, Multistep IQN, default = 1
     -N, Number of quantiles, default = 8
@@ -148,29 +148,29 @@ Dueling IQN and Extensions (default hyperparameter):
 
 
 ## Atari Results
-IQN and M-IQN comparison (only trained for 500000 frames ~ 140 min).
-
+IQN with Munchausen RL extension (M-IQN) trained for 500000 frames.
 
 **Hyperparameter:**
 - frames 500000
 - eps_frames 75000
 - min_eps 0.025
-- eval_every 10000 
-- lr 1e-4 
-- t 5e-3 
-- m 15000 
+- eval_every 10000
+- lr 1e-4
+- t 5e-3
+- m 15000
 - N 32
 
 ![alttext](/imgs/IQN_MIQN_BREAKOUT_.png)
 
-Performance after 10 mio frames, score 258 
+Performance after 10 mio frames, score 258
 
 ![](/imgs/Breakout_IQN.gif?)
 
-## ToDo:
-- Comparison plot for n-step bootstrapping (n-step bootstrapping with n=3 seems to give a strong boost in learning compared to one step bootstrapping, plots will follow) 
-- Performance plot for Pong compared with Rainbow
-- adding [Munchausen](https://medium.com/analytics-vidhya/munchausen-reinforcement-learning-9876efc829de) RL &#x2611;
+## Features
+- ✅ Munchausen RL integrated
+- ✅ N-step bootstrapping (n=3 provides significant performance boost)
+- ✅ Parallel environments for faster training
+- ✅ Support for both vector and image-based environments
 
 
 ## Help and issues:
@@ -179,10 +179,10 @@ Im open for feedback, found bugs, improvements or anything. Just leave me a mess
 ### Paper references:
 
 - [IQN](https://arxiv.org/abs/1806.06923)
-- [Dueling DQN](https://arxiv.org/abs/1511.06581)
-- [Noisy layer](https://arxiv.org/pdf/1706.10295.pdf)
-- [C51](https://arxiv.org/pdf/1707.06887.pdf)
-- [PER](https://arxiv.org/pdf/1511.05952.pdf)
+- [Dueling Networks](https://arxiv.org/abs/1511.06581)
+- [Noisy Networks](https://arxiv.org/pdf/1706.10295.pdf)
+- [PER (Prioritized Experience Replay)](https://arxiv.org/pdf/1511.05952.pdf)
+- [Munchausen RL](https://arxiv.org/abs/2007.14430)
 
 
 ## Author
