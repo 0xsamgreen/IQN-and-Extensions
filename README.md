@@ -4,7 +4,35 @@ This implementation allows it also to run and train on several environments in p
 
 
 
-### Implementation
+## Installation
+
+### Prerequisites
+- Python 3.10 or higher
+- CUDA (optional, for GPU acceleration)
+
+### Setup Instructions
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/0xsamgreen/IQN-and-Extensions.git
+cd IQN-and-Extensions
+```
+
+2. **Create a virtual environment:**
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. **Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+4. **For GPU support (optional):**
+Visit [PyTorch Get Started](https://pytorch.org/get-started/locally/) and install the appropriate PyTorch version for your CUDA version.
+
+## Implementation
 The IQN implementation in this repository includes Double IQN with target networks. 
 
 ### Extensions
@@ -123,15 +151,6 @@ If you're training on a remote server and want to view TensorBoard on your local
 - SSH tunnel: `ssh -L 8888:localhost:6006 username@remote-server-ip`
 - Browser: `http://localhost:8888`
 
-#### Dependencies
-<pre>
-Python 3.10+ 
-PyTorch 2.0+  
-Numpy 1.20+ 
-gymnasium 0.29+ 
-tensorboard
-opencv-python (for Atari environments)
-</pre>
 
 ## CartPole Results
 IQN and Extensions (default hyperparameter):
