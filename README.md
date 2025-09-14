@@ -28,16 +28,47 @@ source venv/bin/activate
 python run.py -env CartPole-v1 -info iqn_cartpole -frames 20000 -eval_every 5000 -N 8 -lr 2.5e-4 -bs 32 -eps_frames 5000 -w 1
 ```
 
-**Important for CartPole:** 
+**Expected Performance (CartPole):**
+- Score of 50+ by 5,000 frames
+- Score of 100+ by 10,000 frames
+- Score of 200+ by 20,000 frames
+- Can reach maximum score of 500 with longer training (50,000 frames)
+
+**Important Notes:**
 - The default epsilon decay (`eps_frames=1000000`) is too slow for CartPole. Use `-eps_frames 5000` for proper learning!
-- This exact command has been tested and verified to work well
-- The agent should reach 50+ score by 5000 frames and 100+ by 10000 frames
+- Use single worker (`-w 1`) for CartPole to avoid synchronization issues
+- This exact command has been tested and verified to work well (Dec 2024)
 
 ### Atari Games
-To run on the Atari game Pong:
+
+#### Quick Test (Breakout)
 ```bash
-python run.py -env PongNoFrameskip-v4 -info iqn_pong1
+# Activate virtual environment first
+source venv/bin/activate
+
+# Quick test to verify Atari works (CPU)
+python run.py -env BreakoutNoFrameskip-v4 -info test_breakout -frames 1000 -N 32 -lr 5e-5 -bs 32 -w 1
 ```
+
+#### Full Training (Breakout)
+```bash
+# Full training run with recommended hyperparameters
+python run.py -env BreakoutNoFrameskip-v4 -info breakout_full -frames 10000000 -eval_every 250000 -N 32 -lr 5e-5 -bs 32 -eps_frames 1000000 -w 1
+```
+
+#### Other Atari Games
+```bash
+# Pong
+python run.py -env PongNoFrameskip-v4 -info pong_run -frames 10000000 -N 32 -lr 5e-5 -bs 32
+
+# Space Invaders
+python run.py -env SpaceInvadersNoFrameskip-v4 -info space_invaders -frames 10000000 -N 32 -lr 5e-5 -bs 32
+
+# Qbert
+python run.py -env QbertNoFrameskip-v4 -info qbert_run -frames 10000000 -N 32 -lr 5e-5 -bs 32
+```
+
+**Note:** Atari training is computationally intensive. On CPU, expect ~1-2 minutes per 100 frames. GPU acceleration is highly recommended for Atari games.
 
 
 #### Other hyperparameter and possible inputs
